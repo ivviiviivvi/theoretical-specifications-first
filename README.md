@@ -82,6 +82,16 @@ uvx --from git+https://github.com/github/spec-kit.git specify init <PROJECT_NAME
 - Better tool management with `uv tool list`, `uv tool upgrade`, `uv tool uninstall`
 - Cleaner shell configuration
 
+### 1.5. Optional: Validate your idea (NEW)
+
+Before diving into full specification, you can quickly validate if your feature idea aligns with your project's principles:
+
+```bash
+/speckit.fitcheck Build a real-time chat feature with end-to-end encryption and file sharing capabilities
+```
+
+This command evaluates your idea against project constitution, scope, complexity, and strategic goals, providing actionable feedback before investing time in detailed specification.
+
 ### 2. Establish project principles
 
 Use the **`/speckit.constitution`** command to create your project's governing principles and development guidelines that will guide all subsequent development.
@@ -121,6 +131,22 @@ Use **`/speckit.implement`** to execute all tasks and build your feature accordi
 ```bash
 /speckit.implement
 ```
+
+### 7. Optional: Import or export projects (NEW)
+
+**Importing an existing project:**
+```bash
+/speckit.handoff import from /path/to/existing/project
+```
+
+This analyzes your existing codebase and generates constitution, specifications, and implementation plans in the Spec-Driven Development format.
+
+**Exporting for non-SDD teams:**
+```bash
+/speckit.handoff export current project
+```
+
+This creates a comprehensive documentation package that traditional development teams can understand without SDD tooling.
 
 For detailed step-by-step instructions, see our [comprehensive guide](./spec-driven.md).
 
