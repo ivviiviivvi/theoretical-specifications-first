@@ -237,9 +237,11 @@ Additional commands for enhanced quality and validation:
 
 | Command              | Description                                                           |
 |----------------------|-----------------------------------------------------------------------|
+| `/speckit.fitcheck`  | Evaluate whether a feature idea aligns with project principles before creating a full specification (run before `/speckit.specify`) |
 | `/speckit.clarify`   | Clarify underspecified areas (recommended before `/speckit.plan`; formerly `/quizme`) |
 | `/speckit.analyze`   | Cross-artifact consistency & coverage analysis (run after `/speckit.tasks`, before `/speckit.implement`) |
 | `/speckit.checklist` | Generate custom quality checklists that validate requirements completeness, clarity, and consistency (like "unit tests for English") |
+| `/speckit.handoff`   | Facilitate project migration between Spec-Driven Development and traditional formats (import existing projects or export for non-SDD teams) |
 
 ### Environment Variables
 
