@@ -25,6 +25,10 @@ Execution steps:
 1. Run `{SCRIPT}` from repo root **once** to establish context. Parse JSON output for:
    - `REPO_ROOT`
    - (Optional) `CURRENT_BRANCH` if in a feature branch
+   - **CRITICAL**: Validate JSON structure before proceeding:
+     * Check JSON is well-formed (try-catch parse)
+     * Verify REPO_ROOT field exists and is non-empty
+     * If validation fails: ERROR "Script output invalid. Please report this issue."
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
 2. Load governing documents and context:

@@ -45,6 +45,10 @@ Execution steps:
 2. **Run initialization script**:
    - Execute `{SCRIPT}` from repo root once
    - Parse JSON output for context paths and validation status
+   - **CRITICAL**: Validate JSON structure before proceeding:
+     * Check JSON is well-formed (try-catch parse)
+     * Verify required fields exist: REPO_ROOT, IS_SDD_REPO, CONSTITUTION_STATUS
+     * If validation fails: ERROR "Script output invalid. Please report this issue."
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
 ---
@@ -55,13 +59,29 @@ Execution steps:
 
 ### Import Steps:
 
+**Progress Tracking**: Report progress at each major step:
+- "[1/8] Creating import branch..."
+- "[2/8] Analyzing source project..."
+- "[3/8] Generating constitution..."
+- etc.
+
 1. **Create import branch** (if in a git repository):
    - Check if repository has git: Run `git rev-parse --show-toplevel 2>/dev/null`
+   - **CRITICAL Validations**:
+     * Check if `001-initial-import` branch already exists: `git rev-parse --verify 001-initial-import 2>/dev/null`
+     * If exists: ERROR "Import branch '001-initial-import' already exists. Delete it first or use a different approach."
+     * Check working directory is clean: `git status --porcelain`
+     * If not clean: ERROR "Working directory has uncommitted changes. Commit or stash them before importing."
    - If git available: Create and checkout branch `001-initial-import`
-   - If git not available: Proceed with import in current context
+   - If git not available: Proceed with import in current context (warn user)
    - Set environment variable: `export SPECIFY_FEATURE=001-initial-import`
 
 2. **Source analysis**:
+   - **PREREQUISITE CHECK**: Verify required templates exist:
+     * Check `.specify/templates/spec-template.md` exists
+     * Check `.specify/templates/plan-template.md` exists  
+     * Check `/memory/constitution.md` exists (as template)
+     * If any missing: ERROR "Required templates missing. Run 'specify init .' in this repository first."
    - Identify source project structure:
      * README/documentation files
      * Source code organization
@@ -72,6 +92,11 @@ Execution steps:
    - Identify primary programming languages
 
 3. **Generate constitution**:
+   - **CRITICAL**: Check if constitution already exists with content:
+     * If `/memory/constitution.md` exists and is NOT a template (contains filled principles):
+       - ERROR "Constitution already exists with project principles. Import would overwrite existing constitution."
+       - Suggest: "To proceed: (1) Back up existing constitution, (2) Delete it, (3) Re-run import"
+       - Or: "Consider importing into a separate project and merging constitutions manually."
    - If source has documented principles (CONTRIBUTING.md, CODE_STYLE.md, etc.), extract them
    - Otherwise, infer from code patterns:
      * Test coverage patterns → testing principles
@@ -145,6 +170,19 @@ Execution steps:
    - Save all generated files
    - Print import summary with next steps
    - Suggest: "Run `/speckit.specify` to start adding new features"
+   
+   **Error Recovery**: If import fails at any step:
+   - Print clear error message with step number where failure occurred
+   - List files that were successfully created (partial state)
+   - Provide cleanup commands:
+     ```bash
+     # To clean up partial import:
+     git checkout main  # or your original branch
+     git branch -D 001-initial-import
+     rm -rf specs/001-initial-import/
+     # Restore constitution if it was overwritten (from backup)
+     ```
+   - Suggest: "Fix the underlying issue and re-run import"
 
 ---
 
@@ -156,9 +194,15 @@ Execution steps:
 
 1. **Scope determination**:
    - If user specified a feature (e.g., "export feature 001-photo-albums"):
+     * **VALIDATE**: Check if feature exists before proceeding
+     * Verify `specs/001-photo-albums/` directory exists
+     * If not found: ERROR "Feature '001-photo-albums' not found in specs/ directory"
+     * List available features to help user
      * Export only that feature's artifacts
    - If user said "export current project" or "export all":
      * Export all features in specs/
+     * **VALIDATE**: Check if specs/ directory has any features
+     * If empty: ERROR "No features found to export. Create features first with /speckit.specify"
    - If ambiguous, ask:
      ```
      What would you like to export?

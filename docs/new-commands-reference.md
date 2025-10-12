@@ -201,14 +201,18 @@ Facilitates bidirectional project migration between Spec-Driven Development (SDD
 - **Requires constitution**: Cannot run without `/memory/constitution.md`
 - **AI-dependent analysis**: Quality depends on AI agent's capability to interpret principles
 - **No automated testing**: Results saved for manual review only
+- **Script validation**: Uses generic prerequisite checker, not fitcheck-specific validator
 - Analysis reports saved to `fitcheck-reports/` directory (excluded from git)
 
 ### handoff Command
 - **Import complexity**: Large codebases may take several minutes to analyze
-- **No checkpoint/resume**: If import fails mid-process, must restart
+- **No checkpoint/resume**: If import fails mid-process, must restart (cleanup commands provided)
 - **Limited code parsing**: Complex build systems or monorepos may not parse fully
 - **Interactive prompts**: May not work in batch/CI contexts
 - **Git recommended**: Import without git creates artifacts without branch isolation
+- **Constitution overwrite protection**: Import fails if constitution already exists with content
+- **Race conditions**: Do not run concurrent import/export operations
+- **Branch validation**: Import checks for clean working directory and existing branches
 - Export packages saved locally in `exports/` directory (excluded from git)
 
 ---
@@ -224,6 +228,24 @@ Facilitates bidirectional project migration between Spec-Driven Development (SDD
 - **Source path not found**: Verify the absolute path is correct
 - **Generated constitution empty**: Source lacks documented principles; you'll need to define them
 - **Import fails**: Ensure source directory is readable and contains recognizable project structure
+- **"Branch already exists"**: Delete the `001-initial-import` branch first: `git branch -D 001-initial-import`
+- **"Working directory not clean"**: Commit or stash your changes before importing
+- **"Constitution already exists"**: Back up and remove existing constitution if you want to import over it
+- **"Templates missing"**: Run `specify init .` in the target repository first
+- **"Script output invalid"**: Report as bug with script output shown in error
+- **Partial import failure**: Use cleanup commands from error message to remove partial state
+
+### `/speckit.handoff` Export Issues
+- **No features to export**: Create at least one feature with `/speckit.specify` first
+- **Feature not found**: Check feature number/name, list available features with `ls specs/`
+- **Export package too large**: Export specific features instead of entire project
+- **SDD markers remain**: Report as bug; should be automatically cleaned
+- **Permission errors**: Check write permissions in `exports/` directory
+
+### General Issues
+- **JSON parse errors**: Script output validation will catch these early now
+- **Concurrent execution**: Don't run multiple imports/exports simultaneously
+- **File locking issues**: Ensure no other processes are modifying spec files
 
 ### `/speckit.handoff` Export Issues
 - **No features to export**: Create at least one feature with `/speckit.specify` first
