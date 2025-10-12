@@ -3,6 +3,9 @@ description: Facilitate project handoff between Spec-Driven Development format a
 scripts:
   sh: scripts/bash/handoff-project.sh --json
   ps: scripts/powershell/handoff-project.ps1 -Json
+agent_scripts:
+  sh: scripts/bash/update-agent-context.sh __AGENT__
+  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__
 ---
 
 ## User Input
@@ -52,7 +55,13 @@ Execution steps:
 
 ### Import Steps:
 
-1. **Source analysis**:
+1. **Create import branch** (if in a git repository):
+   - Check if repository has git: Run `git rev-parse --show-toplevel 2>/dev/null`
+   - If git available: Create and checkout branch `001-initial-import`
+   - If git not available: Proceed with import in current context
+   - Set environment variable: `export SPECIFY_FEATURE=001-initial-import`
+
+2. **Source analysis**:
    - Identify source project structure:
      * README/documentation files
      * Source code organization
@@ -62,16 +71,18 @@ Execution steps:
    - Detect technology stack from package files (package.json, requirements.txt, pom.xml, etc.)
    - Identify primary programming languages
 
-2. **Generate constitution**:
+3. **Generate constitution**:
    - If source has documented principles (CONTRIBUTING.md, CODE_STYLE.md, etc.), extract them
    - Otherwise, infer from code patterns:
      * Test coverage patterns → testing principles
      * Code organization → architecture principles
      * Dependency choices → technology preferences
-   - Create `/memory/constitution.md` using the constitution template
+   - Load the constitution template from `/memory/constitution.md` as a starting point
+   - Fill in the template placeholders with extracted/inferred principles
    - **INTERACTIVE**: Present generated principles and ask for user review/refinement
+   - Save the finalized constitution to `/memory/constitution.md`
 
-3. **Extract and structure specifications**:
+4. **Extract and structure specifications**:
    - Look for existing specifications in:
      * README.md feature descriptions
      * Issue tracker references (if provided)
@@ -82,17 +93,23 @@ Execution steps:
      * Identify major functional areas from code structure
      * Infer user flows from API/UI entry points
      * Document existing features as "As-Is" spec
-   - Use the spec template structure
+   - Use the spec template structure from `.specify/templates/spec-template.md`
 
-4. **Create implementation plan**:
+5. **Create implementation plan**:
    - Generate `specs/001-initial-import/plan.md` documenting:
      * Current architecture (as-is)
      * Technology stack inventory
      * Existing project structure
      * Dependencies and external integrations
+   - Use the plan template structure from `.specify/templates/plan-template.md`
    - Mark this as a "BASELINE" plan representing current state
 
-5. **Migration report**:
+6. **Update agent context**:
+   - Run `{AGENT_SCRIPT}` to update the appropriate agent-specific context file
+   - Add imported project's tech stack and architecture notes
+   - Preserve any manual additions between markers
+
+7. **Migration report**:
    Generate `specs/001-initial-import/import-report.md`:
    ```markdown
    # Project Import Report
@@ -124,7 +141,7 @@ Execution steps:
    4. Continue normal SDD workflow from here
    ```
 
-6. **Completion**:
+8. **Completion**:
    - Save all generated files
    - Print import summary with next steps
    - Suggest: "Run `/speckit.specify` to start adding new features"
@@ -155,7 +172,7 @@ Execution steps:
 
 2. **Generate consolidated documentation**:
    
-   Create export package at `/tmp/export-[PROJECT_NAME]-[TIMESTAMP]/`:
+   Create export package in repository at `exports/export-[PROJECT_NAME]-[TIMESTAMP]/`:
    
    **A. PROJECT_OVERVIEW.md**:
    ```markdown
@@ -247,9 +264,14 @@ Execution steps:
    - Create ZIP file: `[PROJECT_NAME]-export-[TIMESTAMP].zip`
    - Include all generated markdown files
    - Add a LICENSE file from source if present
-   - Save to user-accessible location
+   - Save ZIP in repository `exports/` directory
+   - Also offer to copy to user-specified location if requested
 
-6. **Completion**:
+6. **Update agent context**:
+   - Run `{AGENT_SCRIPT}` to update the appropriate agent-specific context file
+   - Log export activity and package location
+
+7. **Completion**:
    - Print export summary with package location
    - List included features
    - Show package size and file count
@@ -281,7 +303,9 @@ Execution steps:
 
 ### Output Locations:
 - Imports write to current SDD repository structure
-- Exports write to `/tmp/export-[name]-[timestamp]/` and offer to copy elsewhere
+- Exports write to `REPO_ROOT/exports/export-[name]-[timestamp]/` directory
+- Export ZIP files saved in `REPO_ROOT/exports/`
 - Always print full absolute paths to generated artifacts
+- Ensure `exports/` directory is in `.gitignore` (add if not present)
 
 Context for handoff: {ARGS}

@@ -3,6 +3,9 @@ description: Evaluate whether a feature idea aligns with project constitution, p
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json --paths-only
   ps: scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
+agent_scripts:
+  sh: scripts/bash/update-agent-context.sh __AGENT__
+  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__
 ---
 
 ## User Input
@@ -26,6 +29,7 @@ Execution steps:
 
 2. Load governing documents and context:
    - **REQUIRED**: Load `/memory/constitution.md` to understand core principles, constraints, and governance rules
+     * If constitution.md is missing or empty: ERROR "Constitution required for fit check. Run /speckit.constitution first to establish project principles."
    - **IF EXISTS**: Load `README.md` for project purpose and scope
    - **IF EXISTS**: Load `docs/index.md` or similar documentation for strategic goals
    - **IF EXISTS**: Scan `specs/` directory to understand existing feature themes and patterns
@@ -114,11 +118,18 @@ Execution steps:
    - Maximum 2 clarification questions total
 
 7. Save analysis report:
-   - If running from repo root (not in a feature branch), save to `/tmp/fitcheck-[timestamp].md`
-   - If already in a feature branch context, save to `FEATURE_DIR/fitcheck-analysis.md`
+   - Create directory `REPO_ROOT/fitcheck-reports/` if it doesn't exist
+   - Save to `REPO_ROOT/fitcheck-reports/fitcheck-[idea-slug]-[timestamp].md`
+   - Generate slug from first 3-4 words of idea (lowercase, hyphenated)
+   - Ensure `fitcheck-reports/` is in `.gitignore` (add if not present)
    - Report the saved location to user
 
-8. Final output:
+8. Update agent context:
+   - Run `{AGENT_SCRIPT}` to update the appropriate agent-specific context file
+   - Log fitcheck activity and results
+   - Add validated features to agent's memory if PROCEED recommendation
+
+9. Final output:
    - Display the recommendation prominently
    - Show path to detailed analysis file
    - Provide clear next step command or action
@@ -129,7 +140,6 @@ Behavior rules:
 - Be actionable: provide concrete suggestions for improvement
 - Be efficient: complete analysis in single pass unless clarification truly needed
 - Default to PROCEED WITH CAUTION rather than REJECT for edge cases
-- If constitution.md is missing or empty, warn that assessment is limited to scope fit only
 - If project has no existing features (empty specs/), be more permissive on strategic coherence
 
 Context for analysis: {ARGS}

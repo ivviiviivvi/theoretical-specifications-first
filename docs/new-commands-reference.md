@@ -2,6 +2,16 @@
 
 This document provides examples and use cases for the newly added `/speckit.fitcheck` and `/speckit.handoff` commands.
 
+## Important Notes
+
+### Prerequisites
+- **fitcheck** requires `/memory/constitution.md` to exist. Run `/speckit.constitution` first if starting a new project.
+- **handoff import** works best in git repositories for proper branch management
+- **handoff export** creates files in `exports/` directory within your repository
+
+### Agent Context Updates
+Both commands now update agent-specific context files (like `.claude/commands/`, `.github/prompts/`, etc.) to maintain consistency across your development workflow.
+
 ## `/speckit.fitcheck` - Idea Validation
 
 ### Purpose
@@ -85,28 +95,32 @@ Facilitates bidirectional project migration between Spec-Driven Development (SDD
 ```
 
 ### Import Process
-1. Analyzes source code structure and technology stack
-2. Extracts or infers project principles → creates `constitution.md`
-3. Generates baseline specification from codebase
-4. Creates implementation plan documenting as-is state
-5. Provides import report with next steps
+1. Creates import branch `001-initial-import` (if using git)
+2. Analyzes source code structure and technology stack
+3. Extracts or infers project principles → creates `constitution.md`
+4. Generates baseline specification from codebase
+5. Creates implementation plan documenting as-is state
+6. Updates agent context files
+7. Provides import report with next steps
 
 ### Export Process
 1. Consolidates all specifications and plans
 2. Removes SDD-specific terminology and markers
 3. Creates standalone documentation package
 4. Generates handoff instructions for recipients
-5. Packages as ZIP file for distribution
+5. Updates agent context files
+6. Packages as ZIP file in `exports/` directory
 
 ### Output Locations
 - **Imports**: Write to current repository structure
   - `/memory/constitution.md`
   - `/specs/001-initial-import/`
-- **Exports**: Write to `/tmp/export-[project]-[timestamp]/`
+- **Exports**: Write to `exports/export-[project]-[timestamp]/`
   - `PROJECT_OVERVIEW.md`
   - `FEATURE_[NUM]_[NAME].md` files
   - `README_HANDOFF.md`
   - `TECH_STACK.md`
+  - ZIP package in `exports/` directory
 
 ---
 
@@ -179,6 +193,23 @@ Facilitates bidirectional project migration between Spec-Driven Development (SDD
 - Include relevant context in exported packages
 - Test the exported package with someone unfamiliar with SDD
 - Use specific feature exports for incremental handoffs
+- **Check exports/ directory** - packages are saved locally, not to /tmp
+
+## Known Limitations
+
+### fitcheck Command
+- **Requires constitution**: Cannot run without `/memory/constitution.md`
+- **AI-dependent analysis**: Quality depends on AI agent's capability to interpret principles
+- **No automated testing**: Results saved for manual review only
+- Analysis reports saved to `fitcheck-reports/` directory (excluded from git)
+
+### handoff Command
+- **Import complexity**: Large codebases may take several minutes to analyze
+- **No checkpoint/resume**: If import fails mid-process, must restart
+- **Limited code parsing**: Complex build systems or monorepos may not parse fully
+- **Interactive prompts**: May not work in batch/CI contexts
+- **Git recommended**: Import without git creates artifacts without branch isolation
+- Export packages saved locally in `exports/` directory (excluded from git)
 
 ---
 
